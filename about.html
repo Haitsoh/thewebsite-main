@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haitsoh</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-y: auto
+            transition: background 0.6s ease;
+        }
+
+        #bg-video {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            filter: blur(8px) brightness(0.6);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: -1;
+        }
+
+        .main-area {
+            max-width: 900px;
+            width: 90%;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 5.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -2px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.7);
+        }
+
+        h2, h3, h4 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        h2 { font-size: 2.4rem; margin: 2rem 0; }
+        h3 { font-size: 1.9rem; margin: 2rem auto; max-width: 800px; }
+        h4 { font-size: 3.5rem; margin: 3rem 0 2rem; }
+
+        p { font-size: 1.45rem; line-height: 1.7; margin: 1.5rem 0; max-width: 800px; margin-left: auto; margin-right: auto; }
+        ul {
+            list-style: none;
+            text-align: left;
+            max-width: 650px;
+            margin: 3rem auto;
+            font-size: 1.35rem;
+            line-height: 1.9;
+        }
+
+        li { margin: 1.2rem 0; padding-left: 2rem; position: relative; }
+
+        .reveal {
+            opacity: 0;
+            transform: translateX(-140px);
+            filter: blur(10px);
+            transition: all 1.1s ease-out;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateX(0);
+            filter: blur(0);
+        }
+
+        .reveal.visible:nth-child(1) { transition-delay: 0.15s !important; }
+        .reveal.visible:nth-child(2) { transition-delay: 0.35s !important; }
+        .reveal.visible:nth-child(3) { transition-delay: 0.55s !important; }
+        .reveal.visible:nth-child(4) { transition-delay: 0.75s !important; }
+        .reveal.visible:nth-child(5) { transition-delay: 0.95s !important; }
+        .reveal.visible:nth-child(6) { transition-delay: 1.15s !important; }
+
+        .goals-list { transition-delay: 2.0s !important; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 4rem; }
+            h2 { font-size: 2rem; }
+            h4 { font-size: 2.5rem; }
+            .main-area { padding: 1.5rem; }
+        }
+
+        
+        .hamburger {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 1000;
+            width: 48px;
+            height: 36px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 30px;
+            height: 4px;
+            background: white;
+            margin: 6px auto;
+        }
+
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -340px;
+            width: 320px;
+            height: 100%;
+            background: #111;
+            color: white;
+            padding: 5rem 1.5rem 2rem;
+            transition: left 0.4s ease;
+            z-index: 999;
+            overflow-y: auto;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.6);
+        }
+
+        .sidebar.open { left: 0; }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2.8rem;
+            cursor: pointer;
+        }
+
+        .sidebar-tabs {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .sidebar-tabs li {
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .sidebar-tabs li:hover,
+        .sidebar-tabs li.active {
+            background: rgba(255,255,255,0.12);
+        }
+
+        
+        body.youtube-theme .sidebar { background: linear-gradient(to bottom, #200000, #000); box-shadow: 0 0 40px #FF0000, 0 0 80px #FF0000; }
+        body.twitch-theme .sidebar { background: linear-gradient(to bottom, #200033, #000); box-shadow: 0 0 40px #9146FF, 0 0 80px #9146FF; }
+        body.twitter-theme .sidebar { background: linear-gradient(to bottom, #001f3f, #000); box-shadow: 0 0 40px #FFFFFF, 0 0 80px #FFFFFF; }
+        body.bluesky-theme .sidebar { background: linear-gradient(to bottom, #001f3f, #000); box-shadow: 0 0 40px #0099FF, 0 0 80px #0099FF; }
+        body.kofi-theme .sidebar { background: linear-gradient(to bottom, #331100, #000); box-shadow: 0 0 40px #FF6433, 0 0 80px #FF6433; }
+        body.instagram-theme .sidebar { background: linear-gradient(to bottom, #330033, #000); box-shadow: 0 0 40px #E4405F, 0 0 80px #E4405F; }
+        body.tiktok-theme .sidebar { background: linear-gradient(to bottom, #000033, #000); box-shadow: 0 0 40px #00F2EA, 0 0 80px #00F2EA; }
+        body.about-theme .sidebar { background: linear-gradient(to bottom, #111, #000); box-shadow: 0 0 40px #FFFFFF, 0 0 80px #FFFFFF; }
+
+        @media (max-width: 768px) {
+            .hamburger { top: 1rem; left: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="dont.mp4" type="video/mp4">
+    </video>
+
+    <div class="overlay"></div>
+
+    
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Open menu">
+        <span></span><span></span><span></span>
+    </button>
+
+    
+    <div id="sidebar" class="sidebar">
+<div style="margin-top: 2rem; text-align: center;">
+    <h4 style="font-size: 1.4rem; margin-bottom: 1rem;">Links</h4>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <a href="https://www.tiktok.com/@haitsoh" target="_blank" style="color: #fff; text-decoration: none;">TikTok</a>
+        <a href="https://www.youtube.com/@HaiTsoh" target="_blank" style="color: #fff; text-decoration: none;">YouTube</a>
+        <a href="https://twitter.com/HaiTsoh" target="_blank" style="color: #fff; text-decoration: none;">Twitter</a>
+        <a href="https://bsky.app/profile/haitsoh.bsky.social" target="_blank" style="color: #fff; text-decoration: none;">Bluesky</a>
+        <a href="https://ko-fi.com/haitsoh" target="_blank" style="color: #fff; text-decoration: none;">Ko-fi</a>
+        <a href="https://www.instagram.com/haitsoh" target="_blank" style="color: #fff; text-decoration: none;">Instagram</a>
+    </div>
+</div>
+        <button class="close-btn" onclick="toggleSidebar()">×</button>
+        <h3>Platforms de</h3>
+
+        <ul class="sidebar-tabs">
+            <li onclick="showPage('about')" class="active">About Me</li>
+            <li onclick="showPage('youtube')">YouTube</li>
+            <li onclick="showPage('twitch')">Twitch</li>
+            <li onclick="showPage('twitter')">Twitter</li>
+            <li onclick="showPage('bluesky')">Bluesky</li>
+            <li onclick="showPage('kofi')">Ko-fi</li>
+            <li onclick="showPage('instagram')">Instagram</li>
+            <li onclick="showPage('tiktok')">TikTok</li>
+        </ul>
+    </div>
+
+
+    <div id="main-area" class="main-area">
+
+        
+        <div id="about" class="page-content active">
+            <h1 class="reveal">About Me</h1>
+            <h2 class="reveal">Yá'át'ééh, Shí éí Haitsoh yinishyé.</h2>
+            <p class="intro reveal">(Hello, my name is Haitsoh.)<br>
+            I'm a proud (hopefully...) member of the Navajo Nation.<br>
+            Streamer (wannabe), YouTuber, TikToker, Welder, very cancelable person… and way more coming soon!</p>
+
+            <h3 class="reveal">REALISTIC DREAM: full-time content creator life — being like other YouTubers who own Lambos and ridiculous 40-bedroom houses!</h3>
+            <p class="dream reveal">These dreams are DEFINITELY DOABLE — that's exactly why I'm building this website right now.</p>
+
+            <h4 class="reveal">Goals</h4>
+            <ul class="reveal goals-list">
+                <li>Upgrade my PC — 1440p at 120fps+ locked in for smooth 60fps recording and nice frames</li>
+                <li>Hit Twitch Affiliate before the year ends</li>
+                <li>Full setup upgrade with actual practical gear (no more jank/scuff)</li>
+                <li>Get YouTube monetization enabled</li>
+                <li>5k followers on Twitter</li>
+                <li>100k subs on YouTube</li>
+                <li>100k followers on TikTok</li>
+                <li>Find some solid content creator buddies to collab/record/stream with</li>
+                <li>Pass my welding certification</li>
+                <li>Finally own my own personal car</li>
+            </ul>
+        </div>
+
+        
+        <div id="youtube" class="page-content">
+            <h4 class="reveal">YouTube</h4>
+            <p class="reveal"><strong>Why I started:</strong> I wanted to share my journey — Navajo/savage, welding, gaming, and to become a full-time creator.</p>
+            <p class="reveal"><strong>Who inspired me:</strong> Vanossgaming, Markiplier, Jacksepticeye, andPewdepie for gaming and funny moments . But ones who have gotten me back into creating content is Girl-DM, Jayztwocents, and still Vanossgaming</p>
+            <iframe class="reveal" width="100%" height="415" src="https://www.youtube.com/embed/fWx8HIk3ZAg?si=ZT5AG3IqUqP5sw2n" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        
+       
+<div id="twitch" class="page-content">
+    <h4 class="reveal">Twitch</h4>
+    <p class="reveal"><strong>Why I stream:</strong> I'M SUCH A WIMP THAT CAN'T TALK TO WOMAN FOR THE LIFE OF HIM BECAUSE MOST WOMEN HATE MY AHHH. BUT IF YOUR A WOMAN WHO WATCHES ME! heyyy. come check out my live stream that I contiue to fail at for all th life of my hozho! (happy)</p>
+
+    
+    <div id="twitch-embed" class="reveal" style="width: 100%; max-width: 854px; height: 480px; margin: 2rem auto;"></div>
+
+    
+    <script src="https://embed.twitch.tv/embed/v1.js"></script>
+
+ 
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            new Twitch.Embed("twitch-embed", {
+                width: "100%",
+                height: 480,
+                channel: "haitsoh",         
+                layout: "video-with-chat"
+            });
+        });
+    </script>
+</div>
+
+        
+        <div id="twitter" class="page-content">
+            <h4 class="reveal">Twitter</h4>
+            <p class="reveal"><strong>Why I started:</strong> The crappy place to be but here is my twitter and post to show. Also expect just mostly repost of funny or hopefull stuff since that what I want to be.</p>
+            <blockquote class="twitter-tweet reveal"><p lang="en" dir="ltr"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">Very basic about me personal website more is coming! <a href="https://twitter.com/hashtag/website?src=hash&amp;ref_src=twsrc%5Etfw">#website</a> <a href="https://twitter.com/hashtag/Beginner?src=hash&amp;ref_src=twsrc%5Etfw">#Beginner</a> <a href="https://t.co/xCUttUEvaR">pic.twitter.com/xCUttUEvaR</a></p>&mdash; Hai Tsoh (@HaiTsoh) <a href="https://twitter.com/HaiTsoh/status/2012271093684355502?ref_src=twsrc%5Etfw">January 16, 2026</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></p></blockquote>
+            <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
+
+        
+        <div id="bluesky" class="page-content">
+            <h4 class="reveal">Bluesky</h4>
+            <p class="reveal"><strong>Why I started:</strong> WAYYYYYY more better to be since its more chilll and nice also FUCK AI</p>
+            <div class="reveal" style="background:#000; padding:1rem; border-radius:8px;"><blockquote class="bluesky-embed" data-bluesky-uri="at://did:plc:bjx36wazolgxrr4252g6gjb6/app.bsky.feed.post/3mcl3gzgtc223" data-bluesky-cid="bafyreicr3dxl7nolvzx6ipur576pg2qun2hrsud2v75utw3t474ufndoxu" data-bluesky-embed-color-mode="system"><p lang="en">I MADE A WEBSITE 
+#website #css #aboutme<br><br><a href="https://bsky.app/profile/did:plc:bjx36wazolgxrr4252g6gjb6/post/3mcl3gzgtc223?ref_src=embed">[image or embed]</a></p>&mdash; Big winter (<a href="https://bsky.app/profile/did:plc:bjx36wazolgxrr4252g6gjb6?ref_src=embed">@haitsoh.bsky.social</a>) <a href="https://bsky.app/profile/did:plc:bjx36wazolgxrr4252g6gjb6/post/3mcl3gzgtc223?ref_src=embed">January 16, 2026 at 2:52 PM</a></blockquote><script async src="https://embed.bsky.app/static/embed.js" charset="utf-8"></script></div>
+        </div>
+
+        
+        <div id="kofi" class="page-content">
+            <h4 class="reveal">Ko-fi</h4>
+            <p class="reveal"><strong>Why I started:</strong> Support from you guys to support me on the way to making some more content while also personal problems and goals to help me (right now is paying for welding classes) any ammount will help me.If you can't donate share if you can thx you!</p>
+            <div class="reveal" style="text-align:center;">
+                <a href="https://ko-fi.com/haitsoh" target="_blank">
+                    <img src="https://storage.ko-fi.com/cdn/kofi1.png?v=3" alt="Support on Ko-fi" height="36">
+                </a>
+            </div>
+        </div>
+
+        
+        <div id="instagram" class="page-content">
+            <h4 class="reveal">Instagram</h4>
+            <p class="reveal"><strong>Why I started:</strong>Shorts, BTS, and some shitpost or somthing close to that but i will try to have updates moslty here since its stuper easy also expect repost</p>
+            <blockquote class="instagram-media reveal" data-instgrm-permalink="https://www.instagram.com/reel/DR3J6sPGFQs/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14"></blockquote>
+            <script async src="//www.instagram.com/embed.js"></script>
+        </div>
+
+        
+        <div id="tiktok" class="page-content">
+            <h4 class="reveal">TikTok</h4>
+            <p class="reveal"><strong>Why I started:</strong> Short, fun clips but almost just repost and likes hopfully this will be a cool and better place to be since its in a not good situations but welcome to hell hole</p>
+            <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@haitsoh/video/7580165913995939127" data-video-id="7580165913995939127" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@haitsoh" href="https://www.tiktok.com/@haitsoh?refer=embed">@haitsoh</a> BEEF<a title="funny" target="_blank" href="https://www.tiktok.com/tag/funny?refer=embed">#funny</a> @boogedaba64 @tobi_5383 <a target="_blank" title="♬ original sound  - HaiTsoh" href="https://www.tiktok.com/music/original-sound-HaiTsoh-7580165989292165943?refer=embed">♬ original sound  - HaiTsoh</a> </section> </blockquote> <script async src="https://www.tiktok.com/embed.js"></script>
+        </div>
+    </div>
+
+    <script>
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.10,
+            rootMargin: "0px 0px -70px 0px"
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function showPage(pageId) {
+            
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            
+            const selectedPage = document.getElementById(pageId);
+            selectedPage.classList.add('active');
+
+           
+            document.querySelectorAll('.sidebar-tabs li').forEach(li => li.classList.remove('active'));
+            const activeTab = document.querySelector(`[onclick="showPage('${pageId}')"]`);
+            if (activeTab) activeTab.classList.add('active');
+
+            
+            document.body.className = document.body.className.replace(/\w+-theme/g, '');
+            if (pageId === 'twitter' || pageId === 'about') {
+                document.body.classList.add('twitter-theme');
+            } else if (pageId !== 'about') {
+                document.body.classList.add(pageId + '-theme');
+            }
+
+            
+            selectedPage.querySelectorAll('.reveal').forEach(el => {
+                el.classList.remove('visible'); 
+                observer.observe(el);
+            });
+
+            
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('about');
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
